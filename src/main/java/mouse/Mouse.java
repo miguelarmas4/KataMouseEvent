@@ -15,6 +15,7 @@ public class Mouse {
     private long timePressed;
     private boolean pressButton;
     private boolean isWaitingToTriggerSingleClick;
+    private boolean isWaitingToTriggerDoubleClick;
 
     public void pressLeftButton(long currentTimeInMilliseconds) {
         /*... implement this method ...*/
@@ -42,23 +43,33 @@ public class Mouse {
     }
 
     private void resetClickState() {
-        isWaitingToTriggerSingleClick = false;
+        if (isWaitingToTriggerSingleClick) {
+            isWaitingToTriggerSingleClick = false;
+        }
+        if (isWaitingToTriggerDoubleClick) {
+            isWaitingToTriggerDoubleClick = false;
+        }
     }
 
     private boolean isFinallyAClickEvent() {
-        return isWaitingToTriggerSingleClick;
+        return isWaitingToTriggerSingleClick ||
+                isWaitingToTriggerDoubleClick;
     }
 
     private void calculateTypeOfClickEvent() {
         if (!isWaitingToTriggerSingleClick) {
             isWaitingToTriggerSingleClick = true;
             eventToTrigger = MouseEventType.SingleClick;
+        } else if (!isWaitingToTriggerDoubleClick) {
+            isWaitingToTriggerDoubleClick = true;
+            eventToTrigger = MouseEventType.DoubleClick;
         }
     }
 
     private void afterTheClickTimeWindow(Runnable runnable) {
         CompletableFuture.delayedExecutor(clickTimeWindow, TimeUnit.MILLISECONDS).execute(runnable);
     }
+
     public void move(MousePointerCoordinates from, MousePointerCoordinates to, long
             currentTimeInMilliseconds) {
         /*... implement this method ...*/

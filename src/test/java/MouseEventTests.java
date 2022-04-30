@@ -68,6 +68,18 @@ public class MouseEventTests {
         assertThat(listener.eventCount).isEqualTo(1);
     }
 
+    @Test
+    public void double_click_happens_when_single_click_is_repetead_quickly() throws InterruptedException {
+        mouse.pressLeftButton(System.currentTimeMillis());
+        mouse.releaseLeftButton(System.currentTimeMillis() + 10);
+        mouse.pressLeftButton(System.currentTimeMillis());
+        mouse.releaseLeftButton(System.currentTimeMillis() + 10);
+
+        delaySimulatingHumanUser();
+        assertThat(listener.receivedEventType).isEqualTo(MouseEventType.DoubleClick);
+        assertThat(listener.eventCount).isEqualTo(1);
+    }
+
     private void delaySimulatingHumanUser() throws InterruptedException {
         Thread.sleep(Mouse.clickTimeWindow + 100);
     }
