@@ -49,6 +49,25 @@ public class MouseEventTests {
 
     }
 
+    @Test
+    public void single_click_does_not_happen_if_button_is_never_pressed() throws InterruptedException {
+        mouse.releaseLeftButton(System.currentTimeMillis() + 10);
+
+        delaySimulatingHumanUser();
+        assertThat(listener.wasEventTriggered).isFalse();
+    }
+
+    @Test
+    public void button_can_only_be_released_once() throws InterruptedException {
+        mouse.pressLeftButton(System.currentTimeMillis());
+        mouse.releaseLeftButton(System.currentTimeMillis() + 10);
+        mouse.releaseLeftButton(System.currentTimeMillis() + 10);
+        mouse.releaseLeftButton(System.currentTimeMillis() + 10);
+
+        delaySimulatingHumanUser();
+        assertThat(listener.eventCount).isEqualTo(1);
+    }
+
     private void delaySimulatingHumanUser() throws InterruptedException {
         Thread.sleep(Mouse.clickTimeWindow + 100);
     }
