@@ -21,7 +21,7 @@ public class Mouse {
 
     public void pressLeftButton(long currentTimeInMilliseconds) {
         /*... implement this method ...*/
-        timePressed = timeWindowInMillisecondsForDoubleClick;
+        timePressed = currentTimeInMilliseconds;
         pressButton = true;
     }
 
