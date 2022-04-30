@@ -16,6 +16,8 @@ public class Mouse {
     private boolean pressButton;
     private boolean isWaitingToTriggerSingleClick;
     private boolean isWaitingToTriggerDoubleClick;
+    private boolean isWaitingToTriggerTripleClick;
+    private long lastTimeMoved;
 
     public void pressLeftButton(long currentTimeInMilliseconds) {
         /*... implement this method ...*/
@@ -26,9 +28,26 @@ public class Mouse {
     public void releaseLeftButton(long currentTimeInMilliseconds) {
         /*... implement this method ...*/
         if (pressButton) {
-            pressButton = false;
-            handleClickEvent();
+            resetButtonPressedState();
+            if (wasDragging()) {
+                handleDropEvent();
+            } else {
+                handleClickEvent();
+            }
         }
+    }
+
+    private void handleDropEvent() {
+        eventToTrigger = MouseEventType.Drop;
+        notifySubscribers();
+    }
+
+    private boolean wasDragging() {
+        return lastTimeMoved > timePressed;
+    }
+
+    private void resetButtonPressedState() {
+        pressButton = false;
     }
 
     private void handleClickEvent() {
@@ -49,11 +68,15 @@ public class Mouse {
         if (isWaitingToTriggerDoubleClick) {
             isWaitingToTriggerDoubleClick = false;
         }
+        if (isWaitingToTriggerTripleClick) {
+            isWaitingToTriggerTripleClick = false;
+        }
     }
 
     private boolean isFinallyAClickEvent() {
         return isWaitingToTriggerSingleClick ||
-                isWaitingToTriggerDoubleClick;
+                isWaitingToTriggerDoubleClick ||
+                isWaitingToTriggerTripleClick;
     }
 
     private void calculateTypeOfClickEvent() {
@@ -63,6 +86,9 @@ public class Mouse {
         } else if (!isWaitingToTriggerDoubleClick) {
             isWaitingToTriggerDoubleClick = true;
             eventToTrigger = MouseEventType.DoubleClick;
+        }else {
+            isWaitingToTriggerTripleClick = true;
+            eventToTrigger = MouseEventType.TripleClick;
         }
     }
 
@@ -73,6 +99,11 @@ public class Mouse {
     public void move(MousePointerCoordinates from, MousePointerCoordinates to, long
             currentTimeInMilliseconds) {
         /*... implement this method ...*/
+        lastTimeMoved = currentTimeInMilliseconds;
+        if (pressButton) {
+            eventToTrigger = MouseEventType.Drag;
+            notifySubscribers();
+        }
     }
 
     public void subscribe(MouseEventListener listener) {

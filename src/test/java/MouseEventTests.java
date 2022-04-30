@@ -1,6 +1,7 @@
 import mouse.Mouse;
 import mouse.MouseEventListener;
 import mouse.MouseEventType;
+import mouse.MousePointerCoordinates;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -80,6 +81,55 @@ public class MouseEventTests {
         assertThat(listener.eventCount).isEqualTo(1);
     }
 
+    @Test
+    public void triple_click_happens_when_single_click_is_repetead_quickly() throws InterruptedException {
+        long firstTime = System.currentTimeMillis();
+        mouse.pressLeftButton(firstTime);
+        mouse.releaseLeftButton(firstTime + 10);
+        mouse.pressLeftButton(firstTime + Mouse.clickTimeWindow - 50);
+        mouse.releaseLeftButton(firstTime + Mouse.clickTimeWindow - 5);
+        mouse.pressLeftButton(firstTime + Mouse.clickTimeWindow + 10);
+        mouse.releaseLeftButton(firstTime + Mouse.clickTimeWindow + 20);
+
+        delaySimulatingHumanUser();
+        assertThat(listener.receivedEventType).isEqualTo(MouseEventType.TripleClick);
+        assertThat(listener.eventCount).isEqualTo(1);
+    }
+
+    @Test
+    public void dragging_means_clicking_plus_moving() throws InterruptedException {
+        long firstTime = System.currentTimeMillis();
+        mouse.pressLeftButton(firstTime);
+        mouse.move(new MousePointerCoordinates(100, 100),
+                new MousePointerCoordinates(200,200),
+                firstTime + 10);
+
+        assertThat(listener.receivedEventType).isEqualTo(MouseEventType.Drag);
+    }
+
+    @Test
+    public void dropping_means_clicking_plus_moving_plus_releasing() throws InterruptedException {
+        long firstTime = System.currentTimeMillis();
+        mouse.pressLeftButton(firstTime);
+        mouse.move(new MousePointerCoordinates(100, 100),
+                new MousePointerCoordinates(200,200),
+                firstTime + 10);
+        mouse.releaseLeftButton(firstTime + 20);
+
+        assertThat(listener.receivedEventType).isEqualTo(MouseEventType.Drop);
+    }
+
+    @Test
+    public void dragging_means_button_is_currently_pressed() throws InterruptedException {
+        long firstTime = System.currentTimeMillis();
+        mouse.move(new MousePointerCoordinates(100, 100),
+                new MousePointerCoordinates(200,200),
+                firstTime + 10);
+
+        delaySimulatingHumanUser();
+        assertThat(listener.eventCount).isEqualTo(0);
+    }
+    
     private void delaySimulatingHumanUser() throws InterruptedException {
         Thread.sleep(Mouse.clickTimeWindow + 100);
     }
